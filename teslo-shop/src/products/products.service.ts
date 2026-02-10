@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity'
+import { handleDBException } from 'src/utils/handleDbExceptions';
 
 @Injectable()
 export class ProductsService {
 
+  private readonly logger = new Logger('ProductsService');
   constructor(
     @InjectRepository(Product)
-    private readonly productoRepository: Repository<Product>
+    private readonly productoRepository: Repository<Product>,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -19,8 +21,7 @@ export class ProductsService {
       await this.productoRepository.save(product);
       return product;
     }catch(error){
-      console.log(error);
-      throw new Error('Error creating product');
+     handleDBException(error);
     }
   }
 
