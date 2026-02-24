@@ -13,20 +13,20 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async create(createProductDto: CreateProductDto) {
-    try{
+    try {
       const product = this.productRepository.create(createProductDto);
       await this.productRepository.save(product);
       return product;
-    }catch(error){
-     handleDBException(error);
+    } catch (error) {
+      handleDBException(error);
     }
   }
 
   findAll(paginationDto: PaginationDto) {
-    const { limit=10, offset=0 } = paginationDto;
+    const { limit = 10, offset = 0 } = paginationDto;
     return this.productRepository.find({
       take: limit,
       skip: offset,
@@ -34,12 +34,12 @@ export class ProductsService {
   }
 
   async findOne(term: string) {
-    
+
     let product: Product | null;
 
-    if(isUUID(term)){
-      product = await this.productRepository.findOneBy({id: term});
-    }else {
+    if (isUUID(term)) {
+      product = await this.productRepository.findOneBy({ id: term });
+    } else {
       //product = await this.productRepository.findOneBy({slug: term});
       const queryBuilder = this.productRepository.createQueryBuilder();
       product = await queryBuilder.where(`title =:title or slug =:slug`, {
@@ -47,19 +47,31 @@ export class ProductsService {
         slug: term.toLowerCase(),
       }).getOne();
     }
-    
+
     //const product = await this.productRepository.findOneBy({id});
     //if(!product) throw new NotFoundException(`Product with id ${term} not found`);
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+
+    const product = await this.productRepository.preload({
+      id: id,
+      ...updateProductDto
+    })
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+
+    try {
+      return await this.productRepository.save(product);
+    } catch (error) {
+      handleDBException(error);
+    }
+
   }
 
   async remove(id: string) {
     const product = await this.findOne(id);
-    if(!product) throw new NotFoundException(`Product with id ${id} not found`);
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
     await this.productRepository.remove(product);
     return { message: `Product with id ${id} has been removed` };
   }
