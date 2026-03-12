@@ -8,6 +8,7 @@ import { handleDBException } from 'src/utils/handleDbExceptions';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { validate as isUUID } from 'uuid';
 import { ProductImage } from './entities/product-image.entity';
+import { DataSource } from 'typeorm';
 @Injectable()
 export class ProductsService {
   constructor(
@@ -15,6 +16,8 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductImage)
     private readonly productImageRepository: Repository<ProductImage>,
+
+    private readonly dataSource: DataSource,
   ) { }
 
   async create(createProductDto: CreateProductDto) {
@@ -73,25 +76,29 @@ export class ProductsService {
       ...rest,
       images: images.map(image => image.url)
     };
-    
-  }
 
+  }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
 
+    const { images, ...toUpdate } = updateProductDto;
+
+
     const product = await this.productRepository.preload({
-      id: id,
-      ...updateProductDto,
-      images: [],
+      id,
+      ...toUpdate
     })
+
     if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+
+    //create query runner
+    const queryRunner = this.dataSource.createQueryRunner();
 
     try {
       return await this.productRepository.save(product);
     } catch (error) {
       handleDBException(error);
     }
-
   }
 
   async remove(id: string) {
