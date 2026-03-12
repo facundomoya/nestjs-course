@@ -22,18 +22,22 @@ export class ProductsService {
       const { images = [], ...productDetails } = createProductDto;
       const product = this.productRepository.create({ ...createProductDto, ...productDetails, images: images.map(image => this.productImageRepository.create({ url: image })) });
       await this.productRepository.save(product);
-      return {...product, images: images}
+      return { ...product, images: images }
     } catch (error) {
       handleDBException(error);
     }
   }
 
-  findAll(paginationDto: PaginationDto) {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    return this.productRepository.find({
+    const products = await this.productRepository.find({
       take: limit,
       skip: offset,
+      relations: {
+        images: true
+      }
     });
+    return products.map(product => ({ ...product, images: product.images?.map(img => img.url) || [] }));
   }
 
   async findOne(term: string) {
@@ -44,17 +48,34 @@ export class ProductsService {
       product = await this.productRepository.findOneBy({ id: term });
     } else {
       //product = await this.productRepository.findOneBy({slug: term});
-      const queryBuilder = this.productRepository.createQueryBuilder();
+      const queryBuilder = this.productRepository.createQueryBuilder('prod');
       product = await queryBuilder.where(`title =:title or slug =:slug`, {
         title: term.toUpperCase(),
         slug: term.toLowerCase(),
-      }).getOne();
+      })
+        .leftJoinAndSelect('prod.images', 'prodImages')
+        .getOne();
     }
 
     //const product = await this.productRepository.findOneBy({id});
     //if(!product) throw new NotFoundException(`Product with id ${term} not found`);
     return product;
   }
+
+  async findOnePlain(term: string) {
+
+    const product = await this.findOne(term);
+    if (!product) {
+      return null;
+    }
+    const { images = [], ...rest } = product;
+    return {
+      ...rest,
+      images: images.map(image => image.url)
+    };
+    
+  }
+
 
   async update(id: string, updateProductDto: UpdateProductDto) {
 
