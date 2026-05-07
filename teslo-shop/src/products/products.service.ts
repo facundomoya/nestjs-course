@@ -121,4 +121,13 @@ export class ProductsService {
     await this.productRepository.remove(product);
     return { message: `Product with id ${id} has been removed` };
   }
+
+  async deleteAllProducts() {
+    const query = this.productRepository.createQueryBuilder('product');
+    try{
+      return await query.delete().where({}).execute();
+    }catch(error){
+      handleDBException(error);
+    }
+  }
 }
