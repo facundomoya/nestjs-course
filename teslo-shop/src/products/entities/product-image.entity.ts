@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ManyToOne } from 'typeorm/decorator/relations/ManyToOne';
 import { Product } from './product.entity';
 
-@Entity()
+@Entity({ name: 'product_images' })
 export class ProductImage {
 
     @PrimaryGeneratedColumn('uuid')
