@@ -12,10 +12,10 @@
 ```
 docker-compose up -d
 ```
+6. Run: ```npm run start:dev```
 
-6. Execute seed
+7. Execute seed
 ```
 http://localhost:3000/api/seed
 ```
-7. Run: ```npm run start:dev```
 
