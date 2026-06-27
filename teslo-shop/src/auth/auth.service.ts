@@ -5,12 +5,15 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm'
 import { LoginUserDto } from './dto/login-user.dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -37,12 +40,24 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
+      if(!user.isActive){
+        throw new UnauthorizedException('User is inactive, talk with an admin');
+      }
+
       if (!bcrypt.compareSync(password, user.password)) {
         throw new UnauthorizedException('Invalid credentials');
       }
 
       const { password: _, ...userNoPassword } = user;
-      return userNoPassword;
+      return {
+        ...userNoPassword,
+        token: this.getJwtToken({ email: user.email }),
+      };
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 
   private hadleDBExceptions(error: any) {
