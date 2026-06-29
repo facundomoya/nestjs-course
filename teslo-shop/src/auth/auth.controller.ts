@@ -1,8 +1,11 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from './decorators/get-user.decorator';
+import { User } from './entities/user.entity';
+import { GetRawHeaders } from './decorators/get-rawHeaders.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -20,8 +23,20 @@ export class AuthController {
 
   @Get('/private')
   @UseGuards(AuthGuard('jwt'))
-  testingPrivateRoute(){
-    return 'hello world';
+  testingPrivateRoute(
+    @GetUser() user: User,
+    @GetRawHeaders() rawHeaders: string[],
+    //@GetUser('email') email: string,
+    //@Req() request: Express.Request
+  ){
+    //console.log({request});
+    return {
+      ok: true,
+      message: 'Hello World Private',
+      user,
+      //email,
+      rawHeaders
+    }
   }
 
 }

@@ -51,7 +51,7 @@ export class AuthService {
       const { password: _, ...userNoPassword } = user;
       return {
         ...userNoPassword,
-        token: this.getJwtToken({ email: user.email }),
+        token: this.getJwtToken({ email: user.email, id: user.id }),
       };
   }
 
