@@ -7,6 +7,7 @@ import { Product } from './entities/product.entity'
 import { handleDBException } from 'src/utils/handleDbExceptions';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { validate as isUUID } from 'uuid';
+import { User } from 'src/auth/entities/user.entity';
 import { ProductImage } from './entities/product-image.entity';
 import { DataSource } from 'typeorm';
 @Injectable()
@@ -20,10 +21,10 @@ export class ProductsService {
     private readonly dataSource: DataSource,
   ) { }
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
     try {
       const { images = [], ...productDetails } = createProductDto;
-      const product = this.productRepository.create({ ...createProductDto, ...productDetails, images: images.map(image => this.productImageRepository.create({ url: image })) });
+      const product = this.productRepository.create({ ...createProductDto, ...productDetails, images: images.map(image => this.productImageRepository.create({ url: image })), user});
       await this.productRepository.save(product);
       return { ...product, images: images }
     } catch (error) {
@@ -79,7 +80,7 @@ export class ProductsService {
 
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
 
     const { images, ...toUpdate } = updateProductDto;
 
@@ -103,6 +104,7 @@ export class ProductsService {
       } else {
         product.images = await this.productImageRepository.findBy({ product: { id } });
       }
+      product.user = user;
       await queryRunner.manager.save(product);
       await queryRunner.commitTransaction();
       await queryRunner.release();

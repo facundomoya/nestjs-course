@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProductsService } from '../products/products.service';
 import { initialData } from './data/seed-data';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class SeedService {
@@ -20,9 +21,9 @@ export class SeedService {
 
     const insertPromises = [] as Promise<any>[];
 
-    seedProducts.forEach(product => {
+/*     seedProducts.forEach(product => {
       insertPromises.push(this.productService.create(product));
-    });
+    }); */
 
     await Promise.all(insertPromises);
 
