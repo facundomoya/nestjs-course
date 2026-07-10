@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req, SetMetadata } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, SetMetadata, Param } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -24,6 +24,13 @@ export class AuthController {
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.authService.loginUser(loginUserDto);
   }
+
+  @Get('/check-auth-status')
+  @Auth(ValidRoles.admin)
+  checkAuthStatus(@GetUser() user: User) {
+    return this.authService.checkAuthStatus(user);
+  }
+
 
   @Get('/private')
   @UseGuards(AuthGuard('jwt'))
