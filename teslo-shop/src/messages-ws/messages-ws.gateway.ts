@@ -12,11 +12,13 @@ export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconne
     constructor(private readonly messagesWsService: MessagesWsService,
         private readonly jwtService: JwtService
     ) {}
-    handleConnection(client: Socket) {
+
+    async handleConnection(client: Socket) {
         const token = client.handshake.headers.authentication as string;
         let payload: JwtPayload;
         try{
             payload = this.jwtService.verify(token);
+            await this.messagesWsService.registerClient(client, payload.id);
             console.log({ payload });
         } catch (error) {
             console.error({ error });
@@ -24,7 +26,6 @@ export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconne
             return;
         }
         console.log({payload})
-        this.messagesWsService.registerClient(client);
         this.wss.emit('clients-updated', this.messagesWsService.getConnectedClients());
     }
 
@@ -36,21 +37,17 @@ export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconne
 
     @SubscribeMessage('message-from-client')
     onMessageFromClient(client: Socket, payload: NewMessageDto) {
-       //emit only to the client that sent the message
-/*         client.emit('message-from-server', {
-            fullName: 'John Doe',
-            message: payload.message
-        }); */
-        //emit to all clients except the one that sent the message
+        const fullName = this.messagesWsService.getUserFullName(client.id);
+
         client.broadcast.emit('message-from-server', {
-            fullName: 'John Doe',
+            fullName,
             message: payload.message
         });
-        //emit to all clients including the one that sent the message
-/*         this.wss.emit('message-from-server', {
-            fullName: 'John Doe',
+
+        client.emit('message-from-server', {
+            fullName,
             message: payload.message
-        }); */
+        });
     }
 
 }

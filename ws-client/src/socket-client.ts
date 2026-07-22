@@ -39,16 +39,15 @@ const addListeners = (socket: Socket) => {
       messagesUl.append(newMessage);
     });
 
-    messageForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const message = messageInput.value;
-        if (message) {
-            socket.emit('message', message);
-        }
+   messageForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const message = messageInput.value;
+    if (message) {
         socket.emit('message-from-client', { 
             id: '123',
             message: message
-         });
-        messageInput.value = '';
-    });
+        });
+    }
+    messageInput.value = '';
+});
 }
