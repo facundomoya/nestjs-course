@@ -12,6 +12,7 @@ import { MessagesWsModule } from './messages-ws/messages-ws.module';
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
+      ssl: process.env.STAGE === 'prod' ? true: false,
       type: 'postgres',
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
