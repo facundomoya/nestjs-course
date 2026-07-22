@@ -15,7 +15,7 @@ This repository contains four independent backend projects built with NestJS as 
 | **teslo-shop** | PostgreSQL (TypeORM) | Full-featured e-commerce API with JWT auth, roles, WebSockets, file uploads, and Swagger docs |
 | **pokedex** | MongoDB (Mongoose) | Pokemon REST API that fetches data from PokeAPI, with pagination and seed system |
 | **car-dealership** | In-memory (UUID) | Simple CRUD API for cars and brands with seed data |
-| **ws-client** | None | Vite + TypeScript WebSocket client for testing the teslo-shop real-time chat → [Live Demo](https://nest-teslo-shop-project.netlify.app/) |
+| **ws-client** | None | Vite + TypeScript client for testing Socket.IO connections with teslo-shop |
 
 ---
 
